@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535239426597",
+    "project_id": "fuelly-9f574",
+    "storage_bucket": "fuelly-9f574.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535239426597:android:81b7bdc285d52906be35cc",
+        "android_client_info": {
+          "package_name": "com.example.proyect0"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMuDtAnRLs0555gF6Jlw5Vi9OkIhRBUzI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
