@@ -12,9 +12,15 @@ import java.util.Locale
 import androidx.lifecycle.viewModelScope
 import com.example.proyect0.repository.FuelPriceRepository
 import com.example.proyect0.repository.PrecioGasolina
+import com.example.proyect0.data.esDelMesActual
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface FuelPriceUiState {
@@ -24,14 +30,20 @@ sealed interface FuelPriceUiState {
 }
 
 class CargaViewModel(private val repository: CargaRepository, private val fuelPriceRepository: FuelPriceRepository ) : ViewModel() {
-    val todasLasCargas = repository.todasLasCargas
+//    val todasLasCargas = repository.obtenerCargasDelUsuario()
+    private val _idUsuario = MutableStateFlow(-1)
     private val _fuelPriceState = MutableStateFlow<FuelPriceUiState>(FuelPriceUiState.Loading)
     val fuelPriceState: StateFlow<FuelPriceUiState> = _fuelPriceState.asStateFlow()
 
     fun agregarCarga(kilometraje: Int, presupuesto: Double, litros: Double, costo: Double) {
+
+        val usuario = repository.obtenerIdUsuario()
+
         // viewModelScope asegura que esto se ejecute sin congelar la app
         viewModelScope.launch {
+
             val nuevaCarga = Carga(
+                usuarioId = usuario,
                 kilometraje = kilometraje,
                 presupuesto = presupuesto,
                 litros = litros,
@@ -56,5 +68,17 @@ class CargaViewModel(private val repository: CargaRepository, private val fuelPr
         }
 
     }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val todasLasCargas: StateFlow<List<Carga>> = _idUsuario
+        .flatMapLatest { repository.obtenerCargasDelUsuario() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun actualizarUsuario() {
+        _idUsuario.value = repository.obtenerIdUsuario()
+    }
+
+    val cargasEsteMes: StateFlow<Int> = todasLasCargas
+        .map { lista -> lista.count { it.esDelMesActual() } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
 }

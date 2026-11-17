@@ -56,4 +56,8 @@ class LoginViewModel(private val repository: UsuarioRepository) : ViewModel() {
         }
     }
 
+    fun limpiarMensaje() {
+        _mensajeLogin.value = ""
+    }
+
 }

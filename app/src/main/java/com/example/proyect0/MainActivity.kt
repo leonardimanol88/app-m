@@ -8,9 +8,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
@@ -20,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 
 
 import com.example.proyect0.data.AppDatabase
+import com.example.proyect0.data.SesionManager
 import com.example.proyect0.repository.CargaRepository
 import com.example.proyect0.repository.FuelPriceRepository
 import com.example.proyect0.repository.UsuarioRepository
@@ -31,8 +30,9 @@ import com.example.proyect0.ui.LoginViewModel
 import com.example.proyect0.ui.PrincipalView
 import com.example.proyect0.ui.theme.Proyect0Theme
 import com.example.proyect0.ui.CamaraViewModel
-import java.security.Principal
 import com.example.proyect0.data.remote.RetrofitClient
+import com.example.proyect0.ui.PerfilView
+import com.example.proyect0.ui.PerfilViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -42,8 +42,9 @@ class MainActivity : ComponentActivity() {
 
 
         val database = AppDatabase.getDatabase(applicationContext)
-        val repositoryCarga = CargaRepository(database.cargaDao())
-        val repositoryUsuario = UsuarioRepository(database.usuarioDao())
+        val sessionManager = SesionManager(applicationContext)
+        val repositoryCarga = CargaRepository(database.cargaDao(), sessionManager)
+        val repositoryUsuario = UsuarioRepository(database.usuarioDao(), sessionManager)
         val repositoryFuelPrice = FuelPriceRepository(RetrofitClient.api)
 
         val factoryCarga = object : ViewModelProvider.Factory {
@@ -58,9 +59,16 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val factoryPerfil = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return PerfilViewModel(repositoryUsuario, repositoryCarga) as T
+            }
+        }
+
         val cargaViewModel by viewModels<CargaViewModel> { factoryCarga }
         val loginViewModel by viewModels<LoginViewModel> { factoryUsuario }
         val camaraViewModel by viewModels<CamaraViewModel>()
+        val perfilViewModel by viewModels<PerfilViewModel> { factoryPerfil }
 
         // interfaz
         setContent {
@@ -96,7 +104,8 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onCamaraClick = {
                                     navController.navigate("camara")
-                                }
+                                },
+                                onPerfilClick = { navController.navigate("perfil") }
                             )
                         }
 
@@ -113,6 +122,19 @@ class MainActivity : ComponentActivity() {
                             CamaraView(
                                 viewModel = camaraViewModel,
                                 onVolverClick = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable("perfil") {
+                            PerfilView(
+                                viewModel = perfilViewModel,
+                                onVolverClick = { navController.popBackStack() },
+                                onCerrarSesion = {
+                                    loginViewModel.limpiarMensaje()
+                                    navController.navigate("login") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
                             )
                         }
 

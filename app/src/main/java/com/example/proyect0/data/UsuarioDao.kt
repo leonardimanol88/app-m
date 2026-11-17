@@ -13,4 +13,8 @@ interface UsuarioDao {
 
     @Query("SELECT * FROM usuarios_table WHERE nombreUsuario = :usuario AND contrasena = :pass")
     suspend fun iniciarSesion(usuario: String, pass: String): Usuario?
+
+
+    @Query("SELECT * FROM usuarios_table WHERE id = :id")
+    suspend fun obtenerPorId(id: Int): Usuario?
 }

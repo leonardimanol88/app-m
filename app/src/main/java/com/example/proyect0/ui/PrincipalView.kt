@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 //import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -15,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Person
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -25,7 +25,8 @@ import java.util.Locale
 fun PrincipalView(
     viewModel: CargaViewModel,
     onAgregarClick: () -> Unit,
-    onCamaraClick: () -> Unit
+    onCamaraClick: () -> Unit,
+    onPerfilClick: () -> Unit
 ) {
     val listaCargas by viewModel.todasLasCargas.collectAsState(initial = emptyList())
     val gastoTotal = listaCargas.sumOf { it.costo }
@@ -38,6 +39,10 @@ fun PrincipalView(
         viewModel.cargarPrecioGasolina()
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.actualizarUsuario()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -45,7 +50,16 @@ fun PrincipalView(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                ),
+                actions = {
+                    IconButton(onClick = onPerfilClick) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Ir al perfil",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
